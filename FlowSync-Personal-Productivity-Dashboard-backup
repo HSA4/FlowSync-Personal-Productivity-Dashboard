@@ -1,0 +1,48 @@
+{
+  "projects": {
+    " FlowSync-Personal-Productivity-Dashboard": {
+      "description": "Unified personal productivity dashboard with React/Next.js frontend, FastAPI backend, and MySQL database",
+      "structure": {
+        "backend": {
+          "protocol": "FastAPI",
+          "components": [
+            {"name": "main.py", "role": "Entrypoint"},
+            {"name": "database.py", "role": "ORM"},
+            {"name": "requirements.txt", "role": "Dependencies"},
+            {"name": ".env", "role": "Environment variables"},
+            {"name": "Dockerfile", "role": "Containerization"}
+          ]
+        },
+        "frontend": {
+          "protocol": "React/Next.js",
+          "components": [
+            {"name": "components/\*.js", "role": "UI components"},
+            {"name": "hooks/\*.js", "role": "Custom hooks"},
+            {"name": "context/\*.js", "role": "State management"},
+            {"name": "App.js", "role": "Main application"},
+            {"name": "index.js", "role": "Entry point"},
+            {"name": "styles/\*.css", "role": "Tailwind CSS"}
+          ]
+        },
+        "database": {
+          "protocol": "MySQL",
+          "components": [
+            {"name": "schema.sql", "role": "Database structure"},
+            {"name": "migrations/\*.sql", "role": "Schema evolution"},
+            {"name": ".env", "role": "Database credentials"}
+          ]
+        }
+      },
+      "setup": {
+        "backend": {"commands": ["cd backend && pip install -r requirements.txt && python main.py"]},
+        "frontend": {"commands": ["cd frontend && npm install && npm start"]},
+        "database": {"commands": ["cd mysql && mysql -u root -p < schema.sql"]}
+      },
+      "env_vars": {
+        "backend": {"DATABASE_URL": "mysql+pymysql://user:password@localhost/flowsync", "PORT": "8000"},
+        "frontend": {"REACT_APP_API_URL": "http://localhost:8000"},
+        "database": {"MYSQL_USER": "user", "MYSQL_PASSWORD": "password", "MYSQL_DATABASE": "flowsync"}
+      }
+    }
+  }
+}</pre>
