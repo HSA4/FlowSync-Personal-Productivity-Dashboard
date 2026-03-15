@@ -92,6 +92,13 @@ export const apiService = {
   getTodoistOAuthUrl: (redirectUri) => api.get('/api/v1/integrations/oauth/todoist', { params: { redirect_uri: redirectUri } }),
   getGoogleCalendarOAuthUrl: (redirectUri) => api.get('/api/v1/integrations/oauth/google-calendar', { params: { redirect_uri: redirectUri } }),
   integrationOAuthCallback: (provider, code, redirectUri) => api.post(`/api/v1/integrations/oauth/${provider}/callback`, { code, redirect_uri: redirectUri }),
+
+  // AI Features
+  parseTask: (text) => api.post('/api/v1/ai/parse-task', { text }),
+  suggestTasks: (maxSuggestions = 5) => api.post('/api/v1/ai/suggest-tasks', { max_suggestions: maxSuggestions }),
+  prioritizeTasks: (taskIds) => api.post('/api/v1/ai/prioritize-tasks', { task_ids: taskIds }),
+  getAiModels: () => api.get('/api/v1/ai/models'),
+  getAiStatus: () => api.get('/api/v1/ai/status'),
 };
 
 export default api;

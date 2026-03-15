@@ -19,6 +19,7 @@ from app.api.tasks import router as tasks_router
 from app.api.events import router as events_router
 from app.api.auth import router as auth_router
 from app.api.integrations import router as integrations_router
+from app.api.ai import router as ai_router
 
 # Set up logging
 logger = setup_logging()
@@ -58,6 +59,7 @@ app.include_router(auth_router, prefix=settings.API_V1_PREFIX)
 app.include_router(tasks_router, prefix=settings.API_V1_PREFIX)
 app.include_router(events_router, prefix=settings.API_V1_PREFIX)
 app.include_router(integrations_router, prefix=settings.API_V1_PREFIX)
+app.include_router(ai_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.on_event("startup")

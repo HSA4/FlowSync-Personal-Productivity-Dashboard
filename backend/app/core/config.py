@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     TODOIST_API_KEY: Optional[str] = None
     GOOGLE_CALENDAR_API_KEY: Optional[str] = None
 
+    # AI / OpenRouter
+    OPENROUTER_API_KEY: Optional[str] = None
+    OPENROUTER_MODEL: str = "anthropic/claude-3-haiku:beta"  # Default model
+    OPENROUTER_SITE_URL: Optional[str] = None  # For OpenRouter ranking
+    OPENROUTER_APP_NAME: Optional[str] = "FlowSync"
+
     # Logging
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "json"  # or "text"

@@ -7,6 +7,9 @@ A unified productivity dashboard that integrates with your favorite tools (Todoi
 - **Unified Dashboard**: View tasks and calendar events in one place
 - **External Integrations**: Connect Todoist, Google Calendar, and more
 - **Real-time Sync**: Automatic synchronization with external services
+- **AI-Powered Task Creation**: Natural language task parsing using OpenRouter
+- **Smart Task Suggestions**: AI-generated task recommendations
+- **AI Task Prioritization**: Automatic priority scoring based on context
 - **OAuth Authentication**: Secure Google OAuth integration
 - **Modern UI**: Clean, responsive React + Vite frontend
 - **FastAPI Backend**: High-performance Python backend with PostgreSQL
@@ -137,9 +140,37 @@ GOOGLE_REDIRECT_URI=http://localhost:5173/auth/callback
 TODOIST_CLIENT_ID=your-todoist-client-id
 TODOIST_CLIENT_SECRET=your-todoist-client-secret
 
+# AI / OpenRouter
+OPENROUTER_API_KEY=your-openrouter-api-key
+OPENROUTER_MODEL=anthropic/claude-3-haiku:beta
+OPENROUTER_SITE_URL=https://flowsync.app
+OPENROUTER_APP_NAME=FlowSync
+
 # CORS
 CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
+
+### Setting up OpenRouter (AI Features)
+
+FlowSync uses [OpenRouter](https://openrouter.ai/) for AI-powered features:
+
+1. Get an API key from [openrouter.ai/keys](https://openrouter.ai/keys)
+2. Add credit to your OpenRouter account (pay-as-you-go)
+3. Set the environment variables:
+   ```bash
+   export OPENROUTER_API_KEY=your-key-here
+   export OPENROUTER_MODEL=anthropic/claude-3-haiku:beta
+   ```
+
+#### AI Features
+- **Natural Language Task Parsing**: Type "Schedule meeting tomorrow at 2pm" and AI creates the task with correct date/time
+- **Task Suggestions**: Get personalized suggestions based on your current tasks and calendar
+- **Smart Prioritization**: AI re-prioritizes tasks based on deadlines, dependencies, and importance
+
+#### Recommended Models
+- `anthropic/claude-3-haiku:beta` - Fast, cost-effective (default)
+- `anthropic/claude-3.5-sonnet:beta` - Balanced performance
+- `openai/gpt-4o-mini` - Fast and capable
 
 ### Frontend (.env)
 ```env
@@ -239,6 +270,13 @@ sync_logs
 - `POST /api/v1/integrations/{id}/sync` - Trigger sync
 - `GET /api/v1/integrations/oauth/{provider}` - Get OAuth URL
 - `POST /api/v1/integrations/oauth/{provider}/callback` - Handle OAuth callback
+
+### AI Features (OpenRouter)
+- `POST /api/v1/ai/parse-task` - Parse natural language into structured task
+- `POST /api/v1/ai/suggest-tasks` - Generate task suggestions based on context
+- `POST /api/v1/ai/prioritize-tasks` - AI-powered task prioritization
+- `GET /api/v1/ai/models` - List available AI models
+- `GET /api/v1/ai/status` - Check AI service availability
 
 ## Project Structure
 

@@ -1,10 +1,13 @@
 /** Tasks Page */
 import React, { useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTask } from '../hooks/useTasks';
 import TaskList from '../components/TaskList';
+import AITaskInput from '../components/AITaskInput';
 import { getPriorityLabel } from '../utils/format';
 
 const TasksPage = () => {
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState({ completed: undefined, priority: undefined });
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 2 });
@@ -14,6 +17,10 @@ const TasksPage = () => {
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
   const toggleTask = useToggleTask();
+
+  const handleTaskCreated = () => {
+    queryClient.invalidateQueries('tasks');
+  };
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
@@ -98,6 +105,9 @@ const TasksPage = () => {
           Completed
         </button>
       </div>
+
+      {/* AI Task Input */}
+      <AITaskInput onTaskCreated={handleTaskCreated} />
 
       {/* Task List */}
       {isLoading ? (
