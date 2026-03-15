@@ -26,5 +26,10 @@ aiohttp==3.9.1
 # Rate Limiting
 slowapi==0.1.9
 
+# Background Tasks & Caching
+celery==5.3.4
+redis==5.0.1
+flower==2.0.1  # Celery monitoring UI
+
 # Utilities
 pydantic-settings==2.1.0

@@ -25,6 +25,23 @@ class Settings(BaseSettings):
     POSTGRES_DATABASE: str = "flowsync"
     POSTGRES_SSL_MODE: str = "prefer"  # disable, allow, prefer, require, verify-ca, verify-full
 
+    # Redis (Caching & Message Broker)
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: Optional[str] = None
+    REDIS_URL: Optional[str] = None  # Alternative to individual REDIS_* settings
+    REDIS_MAX_CONNECTIONS: int = 50
+
+    # Celery (Background Tasks)
+    CELERY_BROKER_URL: Optional[str] = None  # Defaults to redis://localhost:6379/1
+    CELERY_RESULT_BACKEND: Optional[str] = None  # Defaults to redis://localhost:6379/2
+    CELERY_TASK_TRACK_STARTED: bool = True
+    CELERY_TASK_TIME_LIMIT: int = 30 * 60  # 30 minutes
+    CELERY_TASK_SOFT_TIME_LIMIT: int = 25 * 60  # 25 minutes
+    CELERY_WORKER_PREFETCH_MULTIPLIER: int = 4
+    CELERY_WORKER_MAX_TASKS_PER_CHILD: int = 1000
+
     # Security
     SECRET_KEY: str = "change-me-in-production-use-openssl-rand-hex-32"
     ALGORITHM: str = "HS256"

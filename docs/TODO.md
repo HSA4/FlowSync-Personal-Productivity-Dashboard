@@ -1,22 +1,25 @@
 # FlowSync - Task Queue
 
-**Last Updated**: 2025-03-15 (Session 7)
+**Last Updated**: 2025-03-15 (Session 8)
 
 ---
 
-## Priority 1: Integration Enhancements (Completed)
+## Priority 1: Background Processing (Completed)
 
-- [x] Webhook handling for real-time sync
-- [x] Sync status indicators in UI
-- [x] Better error handling and retry logic
-- [x] Two-way sync (push local changes to external services)
+- [x] Background sync jobs (Celery/Redis)
+- [x] Sync queue management
+- [x] Failed sync retry queue
+- [x] Celery beat scheduler for periodic tasks
+- [x] Flower monitoring UI
 
-## Priority 2: Background Processing (Next)
+## Priority 2: Testing & Quality (Next)
 
-- [ ] Background sync jobs (Celery/Redis)
-- [ ] Webhook signature verification for all providers
-- [ ] Sync queue management
-- [ ] Failed sync retry queue
+- [ ] Frontend tests (Jest/Vitest)
+- [ ] Backend tests for Celery tasks
+- [ ] Integration tests for OAuth flows
+- [ ] E2E tests with Playwright
+- [ ] Load testing for API endpoints
+- [ ] Security audit
 
 ---
 
@@ -136,3 +139,9 @@ Nothing currently blocked.
 - [x] Retry logic with exponential backoff (Session 7)
 - [x] Sync status indicators in UI (Session 7)
 - [x] Webhook registration endpoints (Session 7)
+- [x] Background sync jobs with Celery/Redis (Session 8)
+- [x] Celery beat scheduler (Session 8)
+- [x] AI tasks for daily digest & prioritization (Session 8)
+- [x] Sync queue management API (Session 8)
+- [x] Failed sync retry queue (Session 8)
+- [x] Flower monitoring UI (Session 8)

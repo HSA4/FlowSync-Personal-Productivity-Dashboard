@@ -1,8 +1,74 @@
 # FlowSync - Project Progress
 
-**Last Updated**: 2025-03-15 (Session 7)
+**Last Updated**: 2025-03-15 (Session 8)
 **Maintainer**: Claude (Primary Maintainer)
 **Status**: Active Development
+
+---
+
+## Session Summary
+
+### Session 8: 2025-03-15 (Background Processing with Celery & Redis)
+
+**Completed:**
+- [x] Set up Redis for caching and message broker
+- [x] Implemented Celery task queue system with beat scheduler
+- [x] Created background sync jobs for integrations
+- [x] Added sync queue management API endpoints
+- [x] Implemented failed sync retry queue
+- [x] Created AI tasks (daily digest, prioritization, suggestions, time blocking)
+- [x] Added Celery monitoring API endpoints
+- [x] Updated Docker Compose with Redis, Celery worker, beat, and Flower
+
+**Backend Files Created:**
+- backend/app/core/celery_app.py (Celery application with beat schedule)
+- backend/app/core/redis_client.py (Redis client for caching)
+- backend/app/tasks/sync_tasks.py (Background sync operations)
+- backend/app/tasks/integration_tasks.py (Integration operations)
+- backend/app/tasks/ai_tasks.py (AI-powered tasks)
+- backend/app/api/celery.py (Celery task management API)
+- backend/celery_worker.py (Standalone Celery worker)
+- backend/celery_beat.py (Standalone Celery beat scheduler)
+
+**Backend Files Updated:**
+- backend/app/main.py (registered Celery router, Redis cleanup)
+- backend/requirements.txt (added celery, redis, flower)
+- backend/app/core/config.py (added REDIS_*, CELERY_* settings)
+- docker-compose.yml (added Redis, Celery worker, beat, Flower)
+
+**Features Implemented:**
+- **Background Sync Jobs**: Automatic sync for all integrations
+- **Scheduled Tasks**:
+  - Sync all integrations every 15 minutes
+  - Sync Todoist every 20 minutes
+  - Sync Google Calendar every 30 minutes
+  - Cleanup old results daily at 2 AM
+  - Retry failed syncs every hour
+- **AI Tasks**:
+  - Generate daily digest
+  - Prioritize tasks
+  - Suggest tasks based on patterns
+  - Smart time blocking
+- **Queue Management**:
+  - Trigger sync operations
+  - Check task status and results
+  - Cancel tasks
+  - Queue statistics
+- **Monitoring**:
+  - Flower UI at http://localhost:5555
+  - Celery status API endpoint
+  - Running syncs endpoint
+
+**Docker Services:**
+- Redis (port 6379)
+- Celery Worker (4 concurrent processes)
+- Celery Beat (scheduled tasks)
+- Flower (port 5555) - Monitoring UI
+
+**In Progress:**
+- None
+
+**Blocked:** None
 
 ---
 

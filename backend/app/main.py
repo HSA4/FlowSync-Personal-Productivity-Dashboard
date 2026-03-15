@@ -14,12 +14,14 @@ from app.core.errors import (
     general_exception_handler,
 )
 from app.core.logging import setup_logging, get_logger
+from app.core.redis_client import close_redis_connections
 from app.api.health import router as health_router
 from app.api.tasks import router as tasks_router
 from app.api.events import router as events_router
 from app.api.auth import router as auth_router
 from app.api.integrations import router as integrations_router
 from app.api.ai import router as ai_router
+from app.api.celery import router as celery_router
 
 # Set up logging
 logger = setup_logging()
@@ -60,6 +62,7 @@ app.include_router(tasks_router, prefix=settings.API_V1_PREFIX)
 app.include_router(events_router, prefix=settings.API_V1_PREFIX)
 app.include_router(integrations_router, prefix=settings.API_V1_PREFIX)
 app.include_router(ai_router, prefix=settings.API_V1_PREFIX)
+app.include_router(celery_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.on_event("startup")
@@ -79,6 +82,7 @@ async def startup_event():
 async def shutdown_event():
     """Application shutdown"""
     logger.info("Application shutting down")
+    close_redis_connections()
 
 
 if __name__ == "__main__":
