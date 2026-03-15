@@ -1,0 +1,31 @@
+name: Claude Auto-Continue
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Daily 9AM UTC
+  workflow_dispatch:  # Manual trigger
+jobs:
+  continue:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set Git config
+      run: |
+        git config --global user.name "Claude Maintainer"
+        git config --global user.email "claude@flowsync.auto"
+
+    - name: Create continuation marker
+      run: |
+        echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > .claude-continue-marker
+        git add .claude-continue-marker
+
+    - name: Commit continuation marker
+      run: |
+        git commit -m "Claude Auto-Continue: Scheduled continuation trigger [skip ci]" || echo "No changes to commit"
+
+    - name: Push changes
+      run: |
+        git push origin master
