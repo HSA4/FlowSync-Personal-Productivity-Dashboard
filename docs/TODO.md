@@ -1,66 +1,57 @@
 # FlowSync - Task Queue
 
-**Last Updated**: 2025-01-15 (Session 2)
+**Last Updated**: 2025-03-15 (Session 5)
 
 ---
 
-## Priority 1: Authentication & Security (Next)
+## Priority 1: Integration Enhancements (Next)
 
-- [ ] User model and database schema
-- [ ] Google OAuth integration
-- [ ] JWT token management
-- [ ] Protected routes middleware
-- [ ] Session management
-- [ ] Rate limiting middleware
+- [ ] Webhook handling for real-time sync
+- [ ] Background sync jobs (Celery/Redis)
+- [ ] Sync status indicators in UI
+- [ ] Better error handling and retry logic
+- [ ] Two-way sync (push local changes to external services)
 
 ---
 
-## Priority 2: External Integrations
+## Priority 2: Additional Integrations
 
-- [ ] Todoist API connector
-- [ ] Google Calendar API integration
 - [ ] Gmail API for email summaries
-- [ ] Unified inbox view
-- [ ] Webhook support for real-time updates
+- [ ] GitHub Issues connector
+- [ ] Asana API connector
+- [ ] Slack integration
+- [ ] Notion integration
 
 ---
 
-## Priority 2: Authentication & Security
+## Priority 3: Testing & Quality
 
-- [ ] User model and database schema
-- [ ] Google OAuth integration
-- [ ] JWT token management
-- [ ] Protected routes
-- [ ] Session management
-- [ ] Password reset flow (if email/password auth)
+- [ ] Frontend tests (Jest/Vitest)
+- [ ] Integration tests for OAuth flows
+- [ ] E2E tests with Playwright
+- [ ] Load testing for API endpoints
+- [ ] Security audit
 
 ---
 
-## Priority 3: Core Features Enhancement
+## Priority 4: Core Features Enhancement
 
 ### Task Management
-- [ ] Task update endpoint (PUT /api/tasks/:id)
-- [ ] Task delete endpoint (DELETE /api/tasks/:id)
-- [ ] Task filtering by status/priority/date
 - [ ] Task search functionality
 - [ ] Bulk task operations
+- [ ] Task templates
+- [ ] Recurring tasks
+- [ ] Task dependencies
 
 ### Calendar Integration
-- [ ] Event update/delete endpoints
-- [ ] Google Calendar API integration
-- [ ] Two-way sync
-- [ ] Calendar view improvements
-
-### External Integrations
-- [ ] Todoist API connector
-- [ ] Asana API connector
-- [ ] GitHub Issues connector
-- [ ] Unified inbox view
-- [ ] Webhook support for real-time updates
+- [ ] Calendar view improvements (week/month views)
+- [ ] Drag-and-drop event scheduling
+- [ ] Event reminders
+- [ ] Calendar sharing
 
 ---
 
-## Priority 4: AI Features
+## Priority 5: AI Features
 
 - [ ] Set up AI provider account
 - [ ] NLP task parser ("Schedule meeting tomorrow at 2pm")
@@ -71,7 +62,7 @@
 
 ---
 
-## Priority 5: Analytics
+## Priority 6: Analytics
 
 - [ ] Events tracking system
 - [ ] Metrics calculation (tasks completed, focus time)
@@ -82,7 +73,7 @@
 
 ---
 
-## Priority 6: Polish & Scale
+## Priority 7: Polish & Scale
 
 - [ ] Mobile responsive design audit
 - [ ] Performance optimization
@@ -104,7 +95,6 @@
 - [ ] Dark mode support
 - [ ] Better form validation messages
 - [ ] Add unit tests for utilities
-- [ ] Update README with setup instructions
 
 ---
 
@@ -119,7 +109,18 @@ Nothing currently blocked.
 - [x] Initial project setup
 - [x] Basic FastAPI backend
 - [x] Basic React frontend
-- [x] Database schema for tasks/events
+- [x] Database schema for tasks/events (PostgreSQL)
 - [x] CRUD operations for tasks/events
 - [x] Documentation structure
 - [x] GitHub Actions auto-continue workflow
+- [x] User model and database schema
+- [x] Google OAuth integration
+- [x] JWT token management
+- [x] Protected routes middleware
+- [x] Rate limiting middleware
+- [x] Todoist API connector (backend + frontend)
+- [x] Google Calendar API integration (backend + frontend)
+- [x] Integration OAuth flows
+- [x] Integration sync functionality
+- [x] PostgreSQL migration from MySQL
+- [x] README with setup instructions
