@@ -1,26 +1,27 @@
 # FlowSync - Task Queue
 
-**Last Updated**: 2025-01-15
+**Last Updated**: 2025-01-15 (Session 2)
 
 ---
 
-## Priority 1: Infrastructure & Quality (Do First)
+## Priority 1: Authentication & Security (Next)
 
-- [ ] Set up testing infrastructure
-  - [ ] Install pytest for backend
-  - [ ] Install Jest for frontend
-  - [ ] Write first test for each endpoint
-- [ ] Add comprehensive error handling
-  - [ ] Custom exception classes
-  - [ ] Error logging
-  - [ ] User-friendly error messages
-- [ ] Implement logging system
-  - [ ] Structured logging (JSON)
-  - [ ] Log rotation
-  - [ ] Request/response logging
-- [ ] Add CORS configuration
-- [ ] Implement rate limiting
-- [ ] Set up development Docker Compose
+- [ ] User model and database schema
+- [ ] Google OAuth integration
+- [ ] JWT token management
+- [ ] Protected routes middleware
+- [ ] Session management
+- [ ] Rate limiting middleware
+
+---
+
+## Priority 2: External Integrations
+
+- [ ] Todoist API connector
+- [ ] Google Calendar API integration
+- [ ] Gmail API for email summaries
+- [ ] Unified inbox view
+- [ ] Webhook support for real-time updates
 
 ---
 
