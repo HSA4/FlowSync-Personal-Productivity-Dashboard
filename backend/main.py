@@ -1,8 +1,12 @@
+# FlowSync API - Legacy Entry Point
+# This file is kept for backward compatibility but the app has moved to app/main.py
+# Please use: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-import mysql.connector
-from mysql.connector import Error
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import os
 from dotenv import load_dotenv
 
@@ -10,20 +14,21 @@ load_dotenv()
 
 app = FastAPI(title="FlowSync API", description="Personal Productivity Dashboard API")
 
-# Database configuration
+# Database configuration (PostgreSQL)
 DB_CONFIG = {
-    'host': os.getenv('MYSQL_HOST', 'localhost'),
-    'user': os.getenv('MYSQL_USER', 'root'),
-    'password': os.getenv('MYSQL_PASSWORD', ''),
-    'database': os.getenv('MYSQL_DATABASE', 'flowsync')
+    'host': os.getenv('POSTGRES_HOST', 'localhost'),
+    'port': int(os.getenv('POSTGRES_PORT', 5432)),
+    'user': os.getenv('POSTGRES_USER', 'postgres'),
+    'password': os.getenv('POSTGRES_PASSWORD', 'postgres'),
+    'database': os.getenv('POSTGRES_DATABASE', 'flowsync')
 }
 
 def get_db_connection():
     try:
-        connection = mysql.connector.connect(**DB_CONFIG)
+        connection = psycopg2.connect(**DB_CONFIG)
         return connection
-    except Error as e:
-        print(f"Error connecting to MySQL: {e}")
+    except Exception as e:
+        print(f"Error connecting to PostgreSQL: {e}")
         return None
 
 # Pydantic models
@@ -61,7 +66,7 @@ async def root():
 @app.get("/health")
 async def health_check():
     connection = get_db_connection()
-    if connection and connection.is_connected():
+    if connection:
         connection.close()
         return {"status": "healthy", "database": "connected"}
     else:
@@ -73,16 +78,16 @@ async def get_tasks():
     connection = get_db_connection()
     if not connection:
         raise HTTPException(status_code=500, detail="Database connection failed")
-    
+
     try:
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
         cursor.execute("SELECT * FROM tasks ORDER BY created_at DESC")
         tasks = cursor.fetchall()
         return tasks
-    except Error as e:
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if connection.is_connected():
+        if connection:
             cursor.close()
             connection.close()
 
@@ -91,22 +96,24 @@ async def create_task(task: TaskCreate):
     connection = get_db_connection()
     if not connection:
         raise HTTPException(status_code=500, detail="Database connection failed")
-    
+
     try:
-        cursor = connection.cursor()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
         query = """
         INSERT INTO tasks (title, description, completed, priority, due_date)
         VALUES (%s, %s, %s, %s, %s)
+        RETURNING *
         """
         values = (task.title, task.description, task.completed, task.priority, task.due_date)
         cursor.execute(query, values)
         connection.commit()
-        task_id = cursor.lastrowid
-        return {**task.dict(), "id": task_id}
-    except Error as e:
+        result = cursor.fetchone()
+        return result
+    except Exception as e:
+        connection.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if connection.is_connected():
+        if connection:
             cursor.close()
             connection.close()
 
@@ -116,16 +123,16 @@ async def get_events():
     connection = get_db_connection()
     if not connection:
         raise HTTPException(status_code=500, detail="Database connection failed")
-    
+
     try:
-        cursor = connection.cursor(dictionary=True)
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
         cursor.execute("SELECT * FROM events ORDER BY start_time")
         events = cursor.fetchall()
         return events
-    except Error as e:
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if connection.is_connected():
+        if connection:
             cursor.close()
             connection.close()
 
@@ -134,22 +141,24 @@ async def create_event(event: EventCreate):
     connection = get_db_connection()
     if not connection:
         raise HTTPException(status_code=500, detail="Database connection failed")
-    
+
     try:
-        cursor = connection.cursor()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
         query = """
         INSERT INTO events (title, description, start_time, end_time, all_day)
         VALUES (%s, %s, %s, %s, %s)
+        RETURNING *
         """
         values = (event.title, event.description, event.start_time, event.end_time, event.all_day)
         cursor.execute(query, values)
         connection.commit()
-        event_id = cursor.lastrowid
-        return {**event.dict(), "id": event_id}
-    except Error as e:
+        result = cursor.fetchone()
+        return result
+    except Exception as e:
+        connection.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if connection.is_connected():
+        if connection:
             cursor.close()
             connection.close()
 

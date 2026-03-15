@@ -92,14 +92,12 @@ async def create_event(event: EventCreate):
             query = """
                 INSERT INTO events (title, description, start_time, end_time, all_day)
                 VALUES (%s, %s, %s, %s, %s)
+                RETURNING *
             """
             cursor.execute(
                 query,
                 (event.title, event.description, event.start_time, event.end_time, event.all_day),
             )
-
-            # Get the created event
-            cursor.execute("SELECT * FROM events WHERE id = %s", (cursor.lastrowid,))
             return cursor.fetchone()
 
     except Exception as e:

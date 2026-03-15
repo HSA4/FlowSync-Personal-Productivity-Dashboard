@@ -1,8 +1,61 @@
 # FlowSync - Project Progress
 
-**Last Updated**: 2025-01-15 (Session 4)
+**Last Updated**: 2025-03-15 (Session 5)
 **Maintainer**: Claude (Primary Maintainer)
 **Status**: Active Development
+
+---
+
+## Session Summary
+
+### Session 5: 2025-03-15 (PostgreSQL Migration + Integration OAuth)
+
+**Completed:**
+- [x] Migrated database from MySQL to PostgreSQL
+- [x] Updated database configuration (POSTGRES_* settings)
+- [x] Rewrote database connection module (psycopg2)
+- [x] Converted all SQL migrations to PostgreSQL syntax
+- [x] Updated all SQL queries for PostgreSQL compatibility (RETURNING clause)
+- [x] Updated Docker Compose files for PostgreSQL
+- [x] Connected integration UI to actual OAuth flows
+- [x] Implemented integration OAuth endpoints (Todoist, Google Calendar)
+- [x] Implemented actual sync logic for integrations
+- [x] Created IntegrationOAuthCallbackPage component
+- [x] Added README.md with comprehensive documentation
+
+**Backend Files Updated:**
+- app/core/config.py (POSTGRES_* settings)
+- app/db/database.py (psycopg2 connection pool)
+- app/api/tasks.py (RETURNING clause)
+- app/api/events.py (RETURNING clause)
+- app/api/integrations.py (RETURNING clause + OAuth endpoints)
+- app/services/integrations_oauth.py (new OAuth service classes)
+- backend/requirements.txt (psycopg2-binary)
+- backend/main.py (PostgreSQL compatibility)
+
+**Database Files Updated:**
+- mysql/schema.sql (PostgreSQL syntax)
+- backend/migrations/001_create_users_table.sql (PostgreSQL syntax)
+- backend/migrations/002_create_integrations_table.sql (PostgreSQL syntax)
+- backend/migrations/README.md (PostgreSQL instructions)
+
+**Docker Files Updated:**
+- docker-compose.yml (postgres:16-alpine)
+- docker-compose.dev.yml (postgres:16-alpine)
+
+**Frontend Files Updated:**
+- frontend/src/services/api.js (integration API methods)
+- frontend/src/pages/IntegrationsPage.jsx (OAuth connect/sync)
+- frontend/src/pages/IntegrationOAuthCallbackPage.jsx (new callback handler)
+- frontend/src/App.jsx (added callback route)
+
+**Documentation:**
+- README.md (comprehensive project documentation)
+
+**In Progress:**
+- None
+
+**Blocked:** None
 
 ---
 
@@ -57,15 +110,18 @@
 
 | Metric | Value | Target | Progress |
 |--------|-------|--------|----------|
-| Backend API Endpoints | 27 | 20+ | 135% |
-| Frontend Components | 13 | 15+ | 87% |
+| Backend API Endpoints | 34 | 20+ | 170% |
+| Frontend Components | 14 | 15+ | 93% |
 | Database Tables | 5 | 8+ | 63% |
 | Test Coverage | ~40% | 80% | 50% |
-| Documentation Pages | 7 | 12+ | 58% |
+| Documentation Pages | 8 | 12+ | 67% |
 | Authentication | ✅ Complete | - | 100% |
 | Rate Limiting | ✅ Complete | - | 100% |
 | Docker Setup | ✅ Complete | - | 100% |
 | OAuth UI | ✅ Complete | - | 100% |
+| Integration OAuth | ✅ Complete | - | 100% |
+| Integration Sync | ✅ Complete | - | 100% |
+| PostgreSQL Migration | ✅ Complete | - | 100% |
 | Todoist Integration | ✅ Backend | - | 100% |
 | Google Calendar Integration | ✅ Backend | - | 100% |
 
@@ -73,16 +129,26 @@
 
 ## Technical Debt
 
-1. **Frontend integration UI**: Connect integration cards to actual OAuth flows
-2. **Webhook handling**: Implement webhook endpoints for real-time sync
-3. **Background sync**: Implement scheduled sync jobs
-4. **Frontend tests**: Jest/Vitest tests needed
-5. **Email/password auth**: Currently only OAuth is implemented
-6. **Redis integration**: Not yet used for caching
+1. **Webhook handling**: Implement webhook endpoints for real-time sync
+2. **Background sync**: Implement scheduled sync jobs (Celery/Redis)
+3. **Frontend tests**: Jest/Vitest tests needed
+4. **Email/password auth**: Currently only OAuth is implemented
+5. **Redis integration**: Not yet used for caching/sessions
+6. **Integration error handling**: Better error messages and retry logic
 
 ---
 
 ## Recent Changes
+
+### 2025-03-15 (Session 5)
+- Migrated database from MySQL to PostgreSQL
+- Updated all database configuration and connections
+- Converted SQL migrations to PostgreSQL syntax
+- Updated all SQL queries for PostgreSQL compatibility
+- Connected integration UI to actual OAuth flows
+- Implemented integration OAuth endpoints
+- Implemented actual sync logic for Todoist and Google Calendar
+- Created comprehensive README.md
 
 ### 2025-01-15 (Session 4)
 - Created AuthContext with JWT token management
@@ -127,9 +193,10 @@
 
 ## Next Session Priorities
 
-1. Connect integration UI to actual OAuth flows
-2. Implement webhook endpoints for real-time sync
-3. Add background sync jobs
-4. Create sync status indicators
-5. Add integration tests for auth and integrations
-6. Implement data mapping between external and internal models
+1. Implement webhook endpoints for real-time sync
+2. Add background sync jobs (Celery/Redis)
+3. Create sync status indicators in UI
+4. Add integration tests for auth and integrations
+5. Implement data mapping between external and internal models
+6. Add more external integrations (Gmail, GitHub)
+7. Frontend testing with Jest/Vitest

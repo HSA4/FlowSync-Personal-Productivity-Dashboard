@@ -79,6 +79,7 @@ class AuthService:
                 query = """
                     INSERT INTO users (email, name, avatar_url, provider, provider_id)
                     VALUES (%s, %s, %s, %s, %s)
+                    RETURNING *
                 """
                 cursor.execute(
                     query,
@@ -90,9 +91,6 @@ class AuthService:
                         user_data.provider_id,
                     ),
                 )
-
-                # Get the created user
-                cursor.execute("SELECT * FROM users WHERE id = %s", (cursor.lastrowid,))
                 return User(**cursor.fetchone())
         except Exception as e:
             logger.error("Failed to create user", extra={"error": str(e), "user": user_data.dict()})

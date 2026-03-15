@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import CalendarView from './components/CalendarView';
 import LoginPage from './pages/LoginPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
+import IntegrationOAuthCallbackPage from './pages/IntegrationOAuthCallbackPage';
 import TasksPage from './pages/TasksPage';
 import IntegrationsPage from './pages/IntegrationsPage';
 import ProfilePage from './pages/ProfilePage';
@@ -31,6 +32,7 @@ function App() {
                 }
               />
               <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+              <Route path="/integrations/callback" element={<IntegrationOAuthCallbackPage />} />
 
               {/* Protected Routes */}
               <Route

@@ -58,6 +58,12 @@ export const apiService = {
   // Health check
   health: () => api.get('/health'),
 
+  // Auth
+  getGoogleOAuthUrl: (redirectUri) => api.get('/api/v1/auth/oauth/google', { params: { redirect_uri: redirectUri } }),
+  googleOAuthCallback: (code, redirectUri) => api.post('/api/v1/auth/oauth/google/callback', { code, redirect_uri: redirectUri }),
+  getCurrentUser: () => api.get('/api/v1/auth/me'),
+  logout: () => api.post('/api/v1/auth/logout'),
+
   // Tasks
   getTasks: (params = {}) => api.get('/api/v1/tasks', { params }),
   getTask: (id) => api.get(`/api/v1/tasks/${id}`),
@@ -72,6 +78,20 @@ export const apiService = {
   createEvent: (data) => api.post('/api/v1/events', data),
   updateEvent: (id, data) => api.put(`/api/v1/events/${id}`, data),
   deleteEvent: (id) => api.delete(`/api/v1/events/${id}`),
+
+  // Integrations
+  getAvailableProviders: () => api.get('/api/v1/integrations/providers/available'),
+  getIntegrations: () => api.get('/api/v1/integrations'),
+  getIntegration: (id) => api.get(`/api/v1/integrations/${id}`),
+  createIntegration: (data) => api.post('/api/v1/integrations', data),
+  updateIntegration: (id, enabled) => api.patch(`/api/v1/integrations/${id}`, { enabled }),
+  deleteIntegration: (id) => api.delete(`/api/v1/integrations/${id}`),
+  syncIntegration: (id) => api.post(`/api/v1/integrations/${id}/sync`),
+
+  // Integration OAuth
+  getTodoistOAuthUrl: (redirectUri) => api.get('/api/v1/integrations/oauth/todoist', { params: { redirect_uri: redirectUri } }),
+  getGoogleCalendarOAuthUrl: (redirectUri) => api.get('/api/v1/integrations/oauth/google-calendar', { params: { redirect_uri: redirectUri } }),
+  integrationOAuthCallback: (provider, code, redirectUri) => api.post(`/api/v1/integrations/oauth/${provider}/callback`, { code, redirect_uri: redirectUri }),
 };
 
 export default api;

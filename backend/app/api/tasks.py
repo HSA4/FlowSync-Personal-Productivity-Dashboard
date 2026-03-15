@@ -96,14 +96,12 @@ async def create_task(task: TaskCreate):
             query = """
                 INSERT INTO tasks (title, description, completed, priority, due_date)
                 VALUES (%s, %s, %s, %s, %s)
+                RETURNING *
             """
             cursor.execute(
                 query,
                 (task.title, task.description, task.completed, task.priority, task.due_date),
             )
-
-            # Get the created task
-            cursor.execute("SELECT * FROM tasks WHERE id = %s", (cursor.lastrowid,))
             return cursor.fetchone()
 
     except Exception as e:

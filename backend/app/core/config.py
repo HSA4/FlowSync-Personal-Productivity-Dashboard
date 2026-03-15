@@ -16,12 +16,13 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
-    # Database
-    MYSQL_HOST: str = "localhost"
-    MYSQL_PORT: int = 3306
-    MYSQL_USER: str = "root"
-    MYSQL_PASSWORD: str = ""
-    MYSQL_DATABASE: str = "flowsync"
+    # Database (PostgreSQL)
+    POSTGRES_HOST: str = "localhost"
+    POSTGRES_PORT: int = 5432
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_DATABASE: str = "flowsync"
+    POSTGRES_SSL_MODE: str = "prefer"  # disable, allow, prefer, require, verify-ca, verify-full
 
     # Security
     SECRET_KEY: str = "change-me-in-production-use-openssl-rand-hex-32"
@@ -37,6 +38,8 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: Optional[str] = None
 
     # External APIs
+    TODOIST_CLIENT_ID: Optional[str] = None
+    TODOIST_CLIENT_SECRET: Optional[str] = None
     TODOIST_API_KEY: Optional[str] = None
     GOOGLE_CALENDAR_API_KEY: Optional[str] = None
 

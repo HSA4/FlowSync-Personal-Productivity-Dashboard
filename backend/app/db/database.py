@@ -1,6 +1,7 @@
-"""Database Connection and Management"""
-import mysql.connector
-from mysql.connector import Error
+"""Database Connection and Management (PostgreSQL)"""
+import psycopg2
+from psycopg2 import pool, extras
+from psycopg2.extras import RealDictCursor
 from typing import Optional, Dict, Any, List
 from contextlib import contextmanager
 
@@ -12,44 +13,61 @@ logger = get_logger(__name__)
 
 
 class Database:
-    """Database connection manager"""
+    """PostgreSQL database connection manager"""
 
     def __init__(self):
         self.config = {
-            "host": settings.MYSQL_HOST,
-            "port": settings.MYSQL_PORT,
-            "user": settings.MYSQL_USER,
-            "password": settings.MYSQL_PASSWORD,
-            "database": settings.MYSQL_DATABASE,
-            "autocommit": False,
-            "pool_name": "flowsync_pool",
-            "pool_size": 5,
+            "host": settings.POSTGRES_HOST,
+            "port": settings.POSTGRES_PORT,
+            "user": settings.POSTGRES_USER,
+            "password": settings.POSTGRES_PASSWORD,
+            "database": settings.POSTGRES_DATABASE,
+            "sslmode": settings.POSTGRES_SSL_MODE,
         }
         self._connection_pool = None
+        self._min_pool_size = 1
+        self._max_pool_size = 5
+
+    def _create_pool(self):
+        """Create the connection pool if it doesn't exist"""
+        if self._connection_pool is None:
+            try:
+                self._connection_pool = pool.SimpleConnectionPool(
+                    self._min_pool_size,
+                    self._max_pool_size,
+                    **self.config
+                )
+                logger.info("PostgreSQL connection pool created")
+            except psycopg2.Error as e:
+                logger.error("Failed to create connection pool", extra={"error": str(e)})
+                raise DatabaseError(f"Failed to create database pool: {str(e)}")
 
     def get_connection(self):
         """Get a database connection from the pool"""
         try:
-            if self._connection_pool is None:
-                self._connection_pool = mysql.connector.pooling.MySQLConnectionPool(
-                    **self.config
-                )
-            return self._connection_pool.get_connection()
-        except Error as e:
+            self._create_pool()
+            return self._connection_pool.getconn()
+        except psycopg2.Error as e:
             logger.error("Database connection error", extra={"error": str(e)})
             raise DatabaseError(f"Failed to connect to database: {str(e)}")
 
+    def return_connection(self, connection):
+        """Return a connection to the pool"""
+        if self._connection_pool and connection:
+            self._connection_pool.putconn(connection)
+
     @contextmanager
     def get_cursor(self, dictionary: bool = True):
-        """Context manager for database cursor"""
+        """Context manager for database cursor with RealDictCursor for dict-like results"""
         connection = None
         cursor = None
         try:
             connection = self.get_connection()
-            cursor = connection.cursor(dictionary=dictionary)
+            cursor_factory = RealDictCursor if dictionary else None
+            cursor = connection.cursor(cursor_factory=cursor_factory)
             yield cursor
             connection.commit()
-        except Error as e:
+        except psycopg2.Error as e:
             if connection:
                 connection.rollback()
             logger.error("Database operation error", extra={"error": str(e)})
@@ -58,7 +76,7 @@ class Database:
             if cursor:
                 cursor.close()
             if connection:
-                connection.close()
+                self.return_connection(connection)
 
     def execute_query(
         self, query: str, params: Optional[tuple] = None, fetch: bool = True
@@ -76,8 +94,15 @@ class Database:
             with self.get_cursor() as cursor:
                 cursor.execute("SELECT 1")
                 return True
-        except Error:
+        except psycopg2.Error:
             return False
+
+    def close_all(self):
+        """Close all connections in the pool"""
+        if self._connection_pool:
+            self._connection_pool.closeall()
+            self._connection_pool = None
+            logger.info("All database connections closed")
 
 
 # Global database instance
