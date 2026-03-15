@@ -1,25 +1,27 @@
 # FlowSync - Task Queue
 
-**Last Updated**: 2025-03-15 (Session 8)
+**Last Updated**: 2025-03-15 (Session 9)
 
 ---
 
-## Priority 1: Background Processing (Completed)
+## Priority 1: Testing & Quality (Completed)
 
-- [x] Background sync jobs (Celery/Redis)
-- [x] Sync queue management
-- [x] Failed sync retry queue
-- [x] Celery beat scheduler for periodic tasks
-- [x] Flower monitoring UI
+- [x] Frontend tests (Jest/Vitest)
+- [x] Backend tests for API endpoints
+- [x] Backend tests for Celery tasks
+- [x] GitHub Actions CI/CD pipeline
+- [x] Code quality checks (ESLint, Ruff, Bandit)
+- [x] E2E tests with Playwright
+- [x] Test coverage reporting
 
-## Priority 2: Testing & Quality (Next)
+## Priority 2: Additional Integrations (Next)
 
-- [ ] Frontend tests (Jest/Vitest)
-- [ ] Backend tests for Celery tasks
-- [ ] Integration tests for OAuth flows
-- [ ] E2E tests with Playwright
-- [ ] Load testing for API endpoints
-- [ ] Security audit
+- [ ] Gmail API for email summaries
+- [ ] GitHub Issues connector
+- [ ] Asana API connector
+- [ ] Slack integration
+- [ ] Notion integration
+- [ ] Microsoft To Do integration
 
 ---
 
@@ -145,3 +147,10 @@ Nothing currently blocked.
 - [x] Sync queue management API (Session 8)
 - [x] Failed sync retry queue (Session 8)
 - [x] Flower monitoring UI (Session 8)
+- [x] Frontend tests with Vitest (Session 9)
+- [x] Backend API tests (Session 9)
+- [x] Celery task tests (Session 9)
+- [x] GitHub Actions CI/CD pipeline (Session 9)
+- [x] Code quality checks (Session 9)
+- [x] E2E tests with Playwright (Session 9)
+- [x] Test coverage reporting (Session 9)
