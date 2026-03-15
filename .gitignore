@@ -1,5 +1,5 @@
 # Claude Code
-CLAUDE.md
+# CLAUDE.md
 .claude/
 
 # Python
@@ -83,6 +83,9 @@ logs/*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Continuation marker (intentionally committed for signaling, but ignored locally)
+.claude-continue-marker
 
 # OS
 .DS_Store
