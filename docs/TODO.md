@@ -1,16 +1,22 @@
 # FlowSync - Task Queue
 
-**Last Updated**: 2025-03-15 (Session 5)
+**Last Updated**: 2025-03-15 (Session 7)
 
 ---
 
-## Priority 1: Integration Enhancements (Next)
+## Priority 1: Integration Enhancements (Completed)
 
-- [ ] Webhook handling for real-time sync
+- [x] Webhook handling for real-time sync
+- [x] Sync status indicators in UI
+- [x] Better error handling and retry logic
+- [x] Two-way sync (push local changes to external services)
+
+## Priority 2: Background Processing (Next)
+
 - [ ] Background sync jobs (Celery/Redis)
-- [ ] Sync status indicators in UI
-- [ ] Better error handling and retry logic
-- [ ] Two-way sync (push local changes to external services)
+- [ ] Webhook signature verification for all providers
+- [ ] Sync queue management
+- [ ] Failed sync retry queue
 
 ---
 
@@ -124,3 +130,9 @@ Nothing currently blocked.
 - [x] Integration sync functionality
 - [x] PostgreSQL migration from MySQL
 - [x] README with setup instructions
+- [x] OpenRouter AI integration
+- [x] Webhook handling for real-time sync (Session 7)
+- [x] Two-way sync for tasks (Session 7)
+- [x] Retry logic with exponential backoff (Session 7)
+- [x] Sync status indicators in UI (Session 7)
+- [x] Webhook registration endpoints (Session 7)

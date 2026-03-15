@@ -1,8 +1,52 @@
 # FlowSync - Project Progress
 
-**Last Updated**: 2025-03-15 (Session 6)
+**Last Updated**: 2025-03-15 (Session 7)
 **Maintainer**: Claude (Primary Maintainer)
 **Status**: Active Development
+
+---
+
+## Session Summary
+
+### Session 7: 2025-03-15 (Integration Enhancements)
+
+**Completed:**
+- [x] Implemented webhook handling for real-time sync (Todoist, Google Calendar)
+- [x] Created webhook registration endpoints
+- [x] Implemented two-way sync (push local changes to external services)
+- [x] Added retry logic with exponential backoff for sync operations
+- [x] Created sync status UI indicators with polling
+- [x] Added API endpoint for sync status monitoring
+- [x] Added API endpoint for sync statistics
+- [x] Updated .env.example with new settings
+
+**Backend Files Created:**
+- backend/app/services/webhooks.py (WebhookProcessor base class, Todoist/GoogleCalendar processors)
+- backend/app/core/retry.py (Retry logic with exponential backoff)
+
+**Backend Files Updated:**
+- backend/app/api/integrations.py (webhook handling, registration, sync status/stats endpoints)
+- backend/app/api/tasks.py (two-way sync for create/update/delete/toggle)
+- backend/app/core/config.py (API_BASE_URL, TODOIST_WEBHOOK_SECRET)
+- backend/app/models/tasks.py (added external_id, external_provider, user_id, status fields)
+
+**Frontend Files Updated:**
+- frontend/src/pages/IntegrationsPage.jsx (sync status indicators, polling)
+- frontend/src/services/api.js (getSyncStatus, getSyncStats, registerWebhook)
+
+**Integration Features Implemented:**
+- Real-time webhook processing for Todoist (item:added, item:updated, item:completed, item:deleted)
+- Real-time webhook processing for Google Calendar (event notifications)
+- Two-way sync: local task changes pushed to Todoist
+- Webhook registration via API endpoint
+- Sync status monitoring with visual indicators
+- Retry logic with exponential backoff for failed operations
+- Sync statistics tracking
+
+**In Progress:**
+- None
+
+**Blocked:** None
 
 ---
 

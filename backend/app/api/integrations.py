@@ -1,7 +1,8 @@
 """Integration API Routes"""
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, BackgroundTasks
+from typing import List, Optional, Dict, Any
 from datetime import datetime
+import json
 
 from app.models.integrations import Integration, IntegrationCreate, SyncStatus, WebhookEvent
 from app.models.users import User, OAuthURL, OAuthCallback
@@ -11,6 +12,7 @@ from app.core.logging import get_logger
 from app.core.config import settings
 from app.services.integrations_oauth import TodoistOAuthService, GoogleCalendarOAuthService
 from app.services.integrations import TodoistIntegration, GoogleCalendarIntegration
+from app.services.webhooks import TodoistWebhookProcessor, GoogleCalendarWebhookProcessor
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
 logger = get_logger(__name__)
@@ -333,25 +335,162 @@ async def sync_integration(
 @router.post("/webhook/{provider}")
 async def handle_webhook(
     provider: str,
-    event: WebhookEvent,
+    request: Request,
+    background_tasks: BackgroundTasks,
 ):
     """Handle webhook events from external services"""
     try:
-        logger.info(
-            "Received webhook event",
-            extra={
-                "provider": provider,
-                "event_type": event.event_type,
-                "event_id": event.event_id,
-            },
-        )
+        # Get raw payload and headers
+        payload = await request.body()
 
-        # TODO: Process webhook event and update local data
+        # Verify signature for Todoist
+        if provider == "todoist":
+            signature = request.headers.get(TodoistWebhookProcessor.SIGNATURE_HEADER, "")
+            webhook_secret = settings.TODOIST_WEBHOOK_SECRET
 
-        return {"status": "received"}
+            if webhook_secret:
+                if not TodoistWebhookProcessor.verify_signature(payload, signature, webhook_secret):
+                    logger.warning("Invalid Todoist webhook signature")
+                    raise HTTPException(status_code=401, detail="Invalid signature")
+
+            # Parse JSON payload
+            try:
+                event_data = json.loads(payload)
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+            # Process in background
+            background_tasks.add_task(
+                TodoistWebhookProcessor.process_event,
+                event_data=event_data,
+            )
+
+            logger.info(
+                "Todoist webhook received",
+                extra={"event_type": event_data.get("event_name"), "event_id": event_data.get("event_id")},
+            )
+
+            return {"status": "received", "message": "Webhook processing in background"}
+
+        elif provider == "google-calendar":
+            # Google Calendar webhooks are simple notifications
+            try:
+                event_data = json.loads(payload)
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+            # Process in background
+            background_tasks.add_task(
+                GoogleCalendarWebhookProcessor.process_event,
+                event_data=event_data,
+            )
+
+            logger.info(
+                "Google Calendar webhook received",
+                extra={"channel_id": event_data.get("channel_id")},
+            )
+
+            return {"status": "received", "message": "Webhook processing in background"}
+
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Failed to handle webhook", extra={"error": str(e)})
         raise HTTPException(status_code=500, detail="Failed to process webhook")
+
+
+@router.post("/{integration_id}/webhooks/register")
+async def register_webhook(
+    integration_id: int,
+    current_user: User = Depends(require_active_user),
+):
+    """Register webhook for an integration"""
+    try:
+        # Get integration
+        with db.get_cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM integrations WHERE id = %s AND user_id = %s",
+                (integration_id, current_user.id),
+            )
+            integration = cursor.fetchone()
+
+            if not integration:
+                raise HTTPException(status_code=404, detail="Integration not found")
+
+            if not integration.get("enabled"):
+                raise HTTPException(status_code=400, detail="Integration is disabled")
+
+            provider = integration.get("provider")
+            access_token = integration.get("access_token")
+
+            # Build webhook URL
+            webhook_url = f"{settings.API_BASE_URL}/api/integrations/webhook/{provider}"
+
+            result = {"webhook_registered": False, "webhook_url": webhook_url}
+
+            if provider == "todoist":
+                # Register webhook with Todoist
+                webhook_response = await TodoistIntegration.create_webhook(access_token, webhook_url)
+
+                # Store webhook info in integration settings
+                cursor.execute(
+                    """
+                    UPDATE integrations
+                    SET settings = jsonb_set(
+                        COALESCE(settings, '{}'),
+                        '{webhook_registered}',
+                        'true'
+                    ) || jsonb_build_object('webhook_url', %s)
+                    WHERE id = %s
+                    """,
+                    (webhook_url, integration_id),
+                )
+
+                result["webhook_registered"] = True
+                result["provider_webhook_id"] = webhook_response.get("id")
+
+                logger.info("Registered Todoist webhook", extra={"integration_id": integration_id})
+
+            elif provider == "google_calendar":
+                # Set up watch for Google Calendar
+                watch_response = await GoogleCalendarIntegration.watch_calendar(access_token, webhook_url)
+
+                # Store watch info in integration settings
+                cursor.execute(
+                    """
+                    UPDATE integrations
+                    SET settings = jsonb_set(
+                        COALESCE(settings, '{}'),
+                        '{watch_channel_id}',
+                        %s
+                    ) || jsonb_build_object('webhook_url', %s, 'watch_resource_id', %s, 'watch_expiration', %s)
+                    WHERE id = %s
+                    """,
+                    (
+                        watch_response.get("id"),
+                        webhook_url,
+                        watch_response.get("resourceId"),
+                        watch_response.get("expiration"),
+                        integration_id,
+                    ),
+                )
+
+                result["webhook_registered"] = True
+                result["channel_id"] = watch_response.get("id")
+                result["expiration"] = watch_response.get("expiration")
+
+                logger.info("Registered Google Calendar watch", extra={"integration_id": integration_id})
+
+            return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to register webhook", extra={"error": str(e), "integration_id": integration_id})
+        raise HTTPException(status_code=500, detail="Failed to register webhook")
 
 
 @router.get("/providers/available", response_model=List[dict])
@@ -499,3 +638,107 @@ async def integration_oauth_callback(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to complete integration authorization",
         )
+
+
+@router.get("/sync/status", response_model=Dict[str, Any])
+async def get_sync_status(
+    current_user: User = Depends(require_active_user),
+):
+    """Get sync status for all user integrations"""
+    try:
+        with db.get_cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, name, provider, enabled, last_sync,
+                       settings->>'webhook_registered' as webhook_registered,
+                       settings->>'pending_sync' as pending_sync
+                FROM integrations
+                WHERE user_id = %s
+                ORDER BY last_sync DESC NULLS LAST
+                """,
+                (current_user.id,),
+            )
+            integrations = cursor.fetchall()
+
+        # Build status response
+        integration_statuses = []
+        for integration in integrations:
+            status_info = {
+                "id": integration["id"],
+                "name": integration["name"],
+                "provider": integration["provider"],
+                "enabled": integration["enabled"],
+                "last_sync": integration["last_sync"].isoformat() if integration.get("last_sync") else None,
+                "webhook_registered": integration.get("webhook_registered") == "true",
+                "pending_sync": integration.get("pending_sync") == "true",
+                "status": "idle",
+            }
+
+            # Determine sync status
+            if not integration["enabled"]:
+                status_info["status"] = "disabled"
+            elif integration.get("pending_sync") == "true":
+                status_info["status"] = "pending_sync"
+            elif integration.get("last_sync"):
+                # Check if sync is recent (within 5 minutes)
+                last_sync = integration["last_sync"]
+                if (datetime.utcnow() - last_sync).total_seconds() < 300:
+                    status_info["status"] = "synced"
+
+            integration_statuses.append(status_info)
+
+        return {
+            "integrations": integration_statuses,
+            "overall_status": _get_overall_sync_status(integration_statuses),
+        }
+
+    except Exception as e:
+        logger.error("Failed to get sync status", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail="Failed to retrieve sync status")
+
+
+@router.get("/sync/stats", response_model=Dict[str, Any])
+async def get_sync_stats(
+    current_user: User = Depends(require_active_user),
+):
+    """Get sync statistics for monitoring"""
+    try:
+        from app.core.retry import sync_tracker
+
+        stats = sync_tracker.get_all_stats()
+
+        return {
+            "operations": stats,
+            "summary": {
+                "total_operations": len(stats),
+                "successful_operations": sum(1 for s in stats.values() if s["successes"] > 0),
+            },
+        }
+
+    except Exception as e:
+        logger.error("Failed to get sync stats", extra={"error": str(e)})
+        raise HTTPException(status_code=500, detail="Failed to retrieve sync stats")
+
+
+def _get_overall_sync_status(integrations: list) -> str:
+    """Determine overall sync status from individual integration statuses"""
+    if not integrations:
+        return "no_integrations"
+
+    enabled_count = sum(1 for i in integrations if i["enabled"])
+    if enabled_count == 0:
+        return "no_enabled_integrations"
+
+    has_pending = any(i["pending_sync"] for i in integrations if i["enabled"])
+    if has_pending:
+        return "syncing"
+
+    recently_synced = any(
+        i.get("last_sync") and
+        (datetime.utcnow() - datetime.fromisoformat(i["last_sync"])).total_seconds() < 300
+        for i in integrations if i["enabled"]
+    )
+    if recently_synced:
+        return "synced"
+
+    return "idle"

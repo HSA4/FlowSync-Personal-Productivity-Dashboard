@@ -1,7 +1,36 @@
 /** Integrations Page */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { apiService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+
+const SYNC_STATUS_CONFIG = {
+  idle: {
+    label: 'Idle',
+    color: 'gray',
+    icon: '●',
+  },
+  synced: {
+    label: 'Synced',
+    color: 'green',
+    icon: '✓',
+  },
+  syncing: {
+    label: 'Syncing',
+    color: 'blue',
+    icon: '⟳',
+    animate: true,
+  },
+  pending_sync: {
+    label: 'Pending',
+    color: 'yellow',
+    icon: '⏳',
+  },
+  disabled: {
+    label: 'Disabled',
+    color: 'gray',
+    icon: '○',
+  },
+};
 
 const PROVIDER_CONFIG = {
   todoist: {
@@ -38,14 +67,41 @@ const IntegrationsPage = () => {
   const navigate = useNavigate();
   const [providers, setProviders] = useState([]);
   const [userIntegrations, setUserIntegrations] = useState([]);
+  const [syncStatus, setSyncStatus] = useState({ overall: 'idle', integrations: [] });
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState({});
   const [error, setError] = useState(null);
+  const pollIntervalRef = useRef(null);
 
   useEffect(() => {
     fetchProviders();
     fetchIntegrations();
+    startPolling();
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
   }, []);
+
+  const startPolling = useCallback(() => {
+    // Poll sync status every 10 seconds
+    fetchSyncStatus();
+    pollIntervalRef.current = setInterval(() => {
+      fetchSyncStatus();
+    }, 10000);
+  }, []);
+
+  const fetchSyncStatus = async () => {
+    try {
+      const response = await apiService.getSyncStatus();
+      setSyncStatus(response.data);
+    } catch (err) {
+      // Silently fail for status updates
+      console.debug('Failed to fetch sync status:', err);
+    }
+  };
 
   const fetchProviders = async () => {
     try {
@@ -185,6 +241,14 @@ const IntegrationsPage = () => {
           const integration = getIntegrationForProvider(provider.id);
           const isConnected = !!integration;
 
+          // Get sync status for this integration
+          const integrationStatus = syncStatus.integrations.find(
+            (s) => s.id === integration?.id
+          );
+          const statusConfig = integrationStatus
+            ? SYNC_STATUS_CONFIG[integrationStatus.status] || SYNC_STATUS_CONFIG.idle
+            : SYNC_STATUS_CONFIG.idle;
+
           return (
             <div
               key={provider.id}
@@ -200,21 +264,49 @@ const IntegrationsPage = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-gray-900">{config.name}</h3>
-                    {isConnected && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                        Connected
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {isConnected && (
+                        <>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              integration.enabled
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-600'
+                            }`}
+                          >
+                            {integration.enabled ? 'Connected' : 'Disabled'}
+                          </span>
+                          {/* Sync Status Indicator */}
+                          {integration.enabled && integrationStatus && (
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-${statusConfig.color}-100 text-${statusConfig.color}-800 ${
+                                statusConfig.animate ? 'animate-pulse' : ''
+                              }`}
+                            >
+                              <span>{statusConfig.icon}</span>
+                              {statusConfig.label}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                   <p className="text-sm text-gray-600 mt-1">{config.description}</p>
 
                   {isConnected ? (
                     <div className="mt-4 space-y-2">
-                      {integration.last_sync && (
-                        <p className="text-xs text-gray-500">
-                          Last synced: {new Date(integration.last_sync).toLocaleString()}
-                        </p>
-                      )}
+                      <div className="flex items-center justify-between">
+                        {integrationStatus?.last_sync && (
+                          <p className="text-xs text-gray-500">
+                            Last synced: {new Date(integrationStatus.last_sync).toLocaleString()}
+                          </p>
+                        )}
+                        {integrationStatus?.webhook_registered && (
+                          <span className="text-xs text-green-600 flex items-center gap-1">
+                            <span>🔔</span> Webhook active
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleSync(integration)}

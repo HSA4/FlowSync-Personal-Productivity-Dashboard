@@ -46,6 +46,10 @@ class TaskUpdate(BaseModel):
 class Task(TaskBase):
     """Complete task model with ID"""
     id: int = Field(..., description="Task ID")
+    user_id: Optional[int] = Field(None, description="User ID")
+    status: Optional[str] = Field(None, description="Task status: pending or completed")
+    external_id: Optional[str] = Field(None, description="External task ID from integration")
+    external_provider: Optional[str] = Field(None, description="External provider: todoist, etc.")
     created_at: datetime = Field(..., description="Task creation timestamp")
     updated_at: Optional[datetime] = Field(None, description="Task update timestamp")
 

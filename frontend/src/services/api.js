@@ -86,7 +86,10 @@ export const apiService = {
   createIntegration: (data) => api.post('/api/v1/integrations', data),
   updateIntegration: (id, enabled) => api.patch(`/api/v1/integrations/${id}`, { enabled }),
   deleteIntegration: (id) => api.delete(`/api/v1/integrations/${id}`),
-  syncIntegration: (id) => api.post(`/api/v1/integrations/${id}/sync`),
+  syncIntegration: (id, syncToExternal = false) => api.post(`/api/v1/integrations/${id}/sync`, {}, { params: { sync_to_external: syncToExternal } }),
+  getSyncStatus: () => api.get('/api/v1/integrations/sync/status'),
+  getSyncStats: () => api.get('/api/v1/integrations/sync/stats'),
+  registerWebhook: (id) => api.post(`/api/v1/integrations/${id}/webhooks/register`),
 
   // Integration OAuth
   getTodoistOAuthUrl: (redirectUri) => api.get('/api/v1/integrations/oauth/todoist', { params: { redirect_uri: redirectUri } }),

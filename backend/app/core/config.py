@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # Server
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    API_BASE_URL: str = "http://localhost:8000"  # Base URL for webhook callbacks
 
     # Database (PostgreSQL)
     POSTGRES_HOST: str = "localhost"
@@ -41,6 +42,7 @@ class Settings(BaseSettings):
     TODOIST_CLIENT_ID: Optional[str] = None
     TODOIST_CLIENT_SECRET: Optional[str] = None
     TODOIST_API_KEY: Optional[str] = None
+    TODOIST_WEBHOOK_SECRET: Optional[str] = None  # For webhook signature verification
     GOOGLE_CALENDAR_API_KEY: Optional[str] = None
 
     # AI / OpenRouter
