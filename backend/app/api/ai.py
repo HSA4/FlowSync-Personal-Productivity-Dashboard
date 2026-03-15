@@ -79,7 +79,7 @@ async def parse_task_from_text(
 
         logger.info(
             "Task parsed from natural language",
-            extra={"user_id": current_user.id, "original_text": request.text[:50]}),
+            extra={"user_id": current_user.id, "original_text": request.text[:50]},
         )
 
         return TaskParseResponse(**result)
@@ -167,7 +167,7 @@ async def generate_task_suggestions(
 
         logger.info(
             "Generated task suggestions",
-            extra={"user_id": current_user.id, "count": len(suggestions)}),
+            extra={"user_id": current_user.id, "count": len(suggestions)},
         )
 
         return TaskSuggestionResponse(
@@ -256,7 +256,7 @@ async def prioritize_tasks(
 
         logger.info(
             "Tasks re-prioritized via AI",
-            extra={"user_id": current_user.id, "task_count": len(prioritized)}),
+            extra={"user_id": current_user.id, "task_count": len(prioritized)},
         )
 
         return response
