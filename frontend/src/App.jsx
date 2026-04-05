@@ -7,6 +7,7 @@ import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import CalendarView from './components/CalendarView';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import IntegrationOAuthCallbackPage from './pages/IntegrationOAuthCallbackPage';
 import TasksPage from './pages/TasksPage';
@@ -28,6 +29,14 @@ function App() {
                 element={
                   <PublicRoute>
                     <LoginPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/register"
+                element={
+                  <PublicRoute>
+                    <RegisterPage />
                   </PublicRoute>
                 }
               />

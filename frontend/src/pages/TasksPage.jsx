@@ -1,6 +1,6 @@
 /** Tasks Page */
 import React, { useState } from 'react';
-import { useQueryClient } from 'react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTask } from '../hooks/useTasks';
 import TaskList from '../components/TaskList';
 import AITaskInput from '../components/AITaskInput';

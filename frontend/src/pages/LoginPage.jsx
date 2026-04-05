@@ -98,11 +98,19 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* Footer */}
-        <p className="mt-6 text-center text-sm text-gray-600">
-          FlowSync - Your productivity, synchronized
+        {/* Terms */}
+        <p className="mt-6 text-xs text-center text-gray-500">
+          By continuing, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>
+
+      {/* Register Link */}
+      <p className="mt-6 text-center text-sm text-gray-600">
+        Don't have an account?{' '}
+        <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+          Create account
+        </Link>
+      </p>
     </div>
   );
 };

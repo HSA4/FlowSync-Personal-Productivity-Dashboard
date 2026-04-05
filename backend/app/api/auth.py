@@ -30,22 +30,38 @@ async def get_current_user_info(current_user: User = Depends(require_active_user
 
 @router.post("/login", response_model=Token)
 async def login_with_password(credentials: LoginRequest):
-    """Login with email and password (not implemented yet)"""
-    # TODO: Implement email/password authentication
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Email/password authentication not yet implemented",
-    )
+    """Login with email and password"""
+    try:
+        # Authenticate user
+        user = await AuthService.login_with_email_password(credentials)
+
+        # Create tokens
+        tokens = await AuthService.create_tokens(user.id)
+
+        return tokens
+    except AuthenticationError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+        )
 
 
 @router.post("/register", response_model=Token)
 async def register_with_password(data: RegisterRequest):
-    """Register with email and password (not implemented yet)"""
-    # TODO: Implement email/password registration
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="Email/password registration not yet implemented",
-    )
+    """Register with email and password"""
+    try:
+        # Register user
+        user = await AuthService.register_with_email_password(data)
+
+        # Create tokens
+        tokens = await AuthService.create_tokens(user.id)
+
+        return tokens
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=e.message,
+        )
 
 
 @router.get("/oauth/google", response_model=OAuthURL)

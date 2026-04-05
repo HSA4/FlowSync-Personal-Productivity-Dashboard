@@ -71,7 +71,7 @@ async def startup_event():
     logger.info(
         "Application starting",
         extra={
-            "name": settings.APP_NAME,
+            "app_name": settings.APP_NAME,
             "version": settings.APP_VERSION,
             "debug": settings.DEBUG,
         },

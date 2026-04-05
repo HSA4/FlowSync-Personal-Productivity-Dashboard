@@ -28,8 +28,13 @@ const OAuthCallbackPage = () => {
       }
 
       try {
-        await handleOAuthCallback(code, state);
-        // Navigation happens in handleOAuthCallback
+        const result = await handleOAuthCallback(code, state);
+        if (result.success) {
+          navigate(result.redirectPath || '/', { replace: true });
+        } else {
+          setError(result.error || 'Authentication failed');
+          setTimeout(() => navigate('/login', { replace: true }), 3000);
+        }
       } catch (err) {
         setError(err.message || 'Authentication failed');
         setTimeout(() => navigate('/login', { replace: true }), 3000);

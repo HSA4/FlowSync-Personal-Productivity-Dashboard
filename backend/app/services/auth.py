@@ -4,7 +4,7 @@ from datetime import datetime
 import secrets
 import httpx
 
-from app.core.errors import NotFoundError, AuthenticationError, ExternalServiceError
+from app.core.errors import NotFoundError, AuthenticationError, ValidationError, ExternalServiceError
 from app.core.security import (
     verify_password,
     get_password_hash,
@@ -13,7 +13,7 @@ from app.core.security import (
     verify_token,
 )
 from app.core.config import settings
-from app.models.users import User, UserCreate, Provider
+from app.models.users import User, UserCreate, Provider, RegisterRequest, LoginRequest
 from app.db.database import db
 from app.core.logging import get_logger
 
@@ -76,25 +76,107 @@ class AuthService:
         """Create a new user"""
         try:
             with db.get_cursor() as cursor:
-                query = """
-                    INSERT INTO users (email, name, avatar_url, provider, provider_id)
-                    VALUES (%s, %s, %s, %s, %s)
-                    RETURNING *
-                """
-                cursor.execute(
-                    query,
-                    (
-                        user_data.email,
-                        user_data.name,
-                        user_data.avatar_url,
-                        user_data.provider.value,
-                        user_data.provider_id,
-                    ),
-                )
+                if user_data.password_hash:
+                    query = """
+                        INSERT INTO users (email, name, avatar_url, provider, provider_id, password_hash)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        RETURNING *
+                    """
+                    cursor.execute(
+                        query,
+                        (
+                            user_data.email,
+                            user_data.name,
+                            user_data.avatar_url,
+                            user_data.provider.value,
+                            user_data.provider_id,
+                            user_data.password_hash,
+                        ),
+                    )
+                else:
+                    query = """
+                        INSERT INTO users (email, name, avatar_url, provider, provider_id)
+                        VALUES (%s, %s, %s, %s, %s)
+                        RETURNING *
+                    """
+                    cursor.execute(
+                        query,
+                        (
+                            user_data.email,
+                            user_data.name,
+                            user_data.avatar_url,
+                            user_data.provider.value,
+                            user_data.provider_id,
+                        ),
+                    )
                 return User(**cursor.fetchone())
         except Exception as e:
             logger.error("Failed to create user", extra={"error": str(e), "user": user_data.dict()})
             raise ExternalServiceError("database", "Failed to create user")
+
+    @staticmethod
+    async def register_with_email_password(data: RegisterRequest) -> User:
+        """Register a new user with email and password"""
+        # Check if user already exists
+        existing_user = await AuthService.get_user_by_email(data.email)
+        if existing_user:
+            raise ValidationError("email", "User with this email already exists")
+
+        # Hash password
+        password_hash = get_password_hash(data.password)
+
+        # Create user
+        user_data = UserCreate(
+            email=data.email,
+            name=data.name,
+            provider=Provider.EMAIL,
+            provider_id=data.email,  # For email provider, provider_id is the email
+            password_hash=password_hash,
+        )
+
+        user = await AuthService.create_user(user_data)
+        logger.info("Created new user via email/password", extra={"user_id": user.id})
+
+        # Update last login
+        await AuthService.update_last_login(user.id)
+
+        return user
+
+    @staticmethod
+    async def login_with_email_password(data: LoginRequest) -> User:
+        """Login with email and password"""
+        # Get user by email
+        user = await AuthService.get_user_by_email(data.email)
+        if not user:
+            raise AuthenticationError("Invalid email or password")
+
+        # Get password hash from database
+        try:
+            with db.get_cursor() as cursor:
+                cursor.execute(
+                    "SELECT password_hash FROM users WHERE id = %s",
+                    (user.id,),
+                )
+                result = cursor.fetchone()
+                if not result or not result.get("password_hash"):
+                    raise AuthenticationError("Invalid email or password")
+                password_hash = result["password_hash"]
+        except AuthenticationError:
+            raise
+        except Exception as e:
+            logger.error("Failed to get password hash", extra={"error": str(e), "user_id": user.id})
+            raise AuthenticationError("Invalid email or password")
+
+        # Verify password
+        if not verify_password(data.password, password_hash):
+            raise AuthenticationError("Invalid email or password")
+
+        # Update last login
+        await AuthService.update_last_login(user.id)
+
+        logger.info("User logged in via email/password", extra={"user_id": user.id})
+
+        return user
 
     @staticmethod
     async def update_last_login(user_id: int) -> None:

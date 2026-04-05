@@ -13,6 +13,11 @@ class Provider(str, Enum):
     EMAIL = "email"
 
 
+class MessageResponse(BaseModel):
+    """Generic message response"""
+    message: str
+
+
 class UserBase(BaseModel):
     """Base user model"""
     email: EmailStr = Field(..., description="User email")
@@ -24,6 +29,7 @@ class UserCreate(UserBase):
     """Model for creating a new user (internal)"""
     provider: Provider = Field(..., description="Authentication provider")
     provider_id: str = Field(..., description="Provider-specific user ID")
+    password_hash: Optional[str] = Field(None, description="Password hash for email provider")
 
 
 class UserUpdate(BaseModel):
