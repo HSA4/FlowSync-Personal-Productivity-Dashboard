@@ -1,6 +1,5 @@
 /** Authentication Context Provider */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { apiService } from '../services/api';
 
 const AuthContext = createContext(null);
@@ -15,90 +14,117 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [error, setError] = useState(null);
 
   // Check if user is already authenticated on mount
   useEffect(() => {
     checkAuth();
   }, []);
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
+        setIsAuthenticated(false);
+        setUser(null);
         setIsLoading(false);
         return;
       }
 
       const response = await apiService.get('/api/v1/auth/me');
-      setUser(response.data);
-      setIsAuthenticated(true);
+
+      if (response.data) {
+        setUser(response.data);
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
     } catch (error) {
+      console.error('Auth check failed:', error);
+
       // Token is invalid or expired
       localStorage.removeItem('auth_token');
       localStorage.removeItem('refresh_token');
+
       setUser(null);
       setIsAuthenticated(false);
+      setError('Authentication failed');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const loginWithGoogle = useCallback(async () => {
     try {
-      // Get Google OAuth URL
       const redirectUri = `${window.location.origin}/auth/callback`;
       const response = await apiService.get('/api/v1/auth/oauth/google', {
         params: { redirect_uri: redirectUri },
       });
 
-      // Store the state for verification
+      // Store state for verification
       sessionStorage.setItem('oauth_state', response.data.state);
-      sessionStorage.setItem('oauth_redirect', location.pathname);
+      sessionStorage.setItem('oauth_redirect', window.location.pathname);
 
       // Redirect to Google OAuth
       window.location.href = response.data.url;
     } catch (error) {
       console.error('Failed to initiate Google login:', error);
-      throw new Error('Failed to connect to Google. Please try again.');
+      setError('Failed to connect to Google. Please try again.');
     }
-  }, [location]);
+  }, []);
 
   const handleOAuthCallback = useCallback(async (code, state) => {
     try {
-      // Verify state
       const storedState = sessionStorage.getItem('oauth_state');
       if (state !== storedState) {
         throw new Error('Invalid OAuth state');
       }
 
-      // Exchange code for tokens
       const redirectUri = `${window.location.origin}/auth/callback`;
       const response = await apiService.post('/api/v1/auth/oauth/google/callback', {
         code,
         redirect_uri: redirectUri,
       });
 
-      // Store tokens
       localStorage.setItem('auth_token', response.data.access_token);
       localStorage.setItem('refresh_token', response.data.refresh_token);
 
-      // Get user info
-      await checkAuth();
-
-      // Redirect to original destination or home
+      // Clear session storage but keep redirect path for component to handle
       const redirectPath = sessionStorage.getItem('oauth_redirect') || '/';
       sessionStorage.removeItem('oauth_state');
       sessionStorage.removeItem('oauth_redirect');
-      navigate(redirectPath, { replace: true });
+
+      // Return success - calling component handles navigation
+      return { success: true, redirectPath };
     } catch (error) {
       console.error('OAuth callback failed:', error);
-      throw new Error('Authentication failed. Please try again.');
+      setError('Authentication failed. Please try again.');
+      return { success: false, error };
     }
-  }, [navigate]);
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        await apiService.post('/api/v1/auth/logout');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      setUser(null);
+      setIsAuthenticated(false);
+      // Calling component handles navigation
+    }
+  }, []);
 
   const refreshToken = useCallback(async () => {
     try {
@@ -114,34 +140,16 @@ export const AuthProvider = ({ children }) => {
 
       return response.data.access_token;
     } catch (error) {
-      // Refresh failed, logout user
       await logout();
       throw error;
     }
-  }, []);
-
-  const logout = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        await apiService.post('/api/v1/auth/logout');
-      }
-    } catch (error) {
-      console.error('Logout failed:', error);
-    } finally {
-      // Clear tokens and user state
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('refresh_token');
-      setUser(null);
-      setIsAuthenticated(false);
-      navigate('/');
-    }
-  }, [navigate]);
+  }, [logout]);
 
   const value = {
     user,
     isAuthenticated,
     isLoading,
+    error,
     loginWithGoogle,
     handleOAuthCallback,
     refreshToken,

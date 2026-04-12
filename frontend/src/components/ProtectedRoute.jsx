@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-export const PublicRoute = ({ children }) => {
+const PublicRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -40,4 +40,6 @@ export const PublicRoute = ({ children }) => {
   return children;
 };
 
+// Named exports for compatibility
+export { ProtectedRoute, PublicRoute };
 export default ProtectedRoute;

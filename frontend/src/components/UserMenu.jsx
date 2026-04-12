@@ -23,6 +23,7 @@ const UserMenu = () => {
   const handleLogout = async () => {
     await logout();
     setIsOpen(false);
+    navigate('/login', { replace: true });
   };
 
   if (!user) {

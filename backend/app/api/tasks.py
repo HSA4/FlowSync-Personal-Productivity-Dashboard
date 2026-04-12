@@ -1,5 +1,5 @@
 """Task API Routes"""
-from fastapi import APIRouter, HTTPException, Query, status, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, status, BackgroundTasks, Depends
 from typing import Optional
 
 from app.models.tasks import Task, TaskCreate, TaskUpdate, TaskList, Priority
@@ -96,7 +96,7 @@ async def create_task(
     task: TaskCreate,
     background_tasks: BackgroundTasks,
     sync_to_external: bool = Query(False, description="Sync task to external integrations"),
-    current_user: User = Depends(require_active_user),
+    current_user: User = Depends(require_active_user)
 ):
     """Create a new task"""
     try:
